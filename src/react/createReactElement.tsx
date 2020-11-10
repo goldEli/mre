@@ -1,48 +1,50 @@
 export class ReactElement {
-  type: string;
+  type: string | Function;
   key: string | null = null;
   props: { children: ReactElement[] } & { [key: string]: any };
-  constructor(type: string, props: any, key?: string | null) {
+  constructor(type: string | Function, props: any, key?: string | null) {
     this.type = type;
     this.props = props;
   }
-  getDom = (): HTMLElement => {
-    const dom = document.createElement(this.type);
-    for (let key in this.props) {
-      if (key === "children") continue;
-      dom.setAttribute(key, this.props[key]);
+  getMarkup = (rootId: string): string => {
+    return "";
+  };
+}
+
+class ReactNativeElement extends ReactElement {
+  getMarkup = (rootId: string): string => {
+    if (typeof this.type !== "string") return "";
+    let startTag = `<${this.type} data-reactid="${rootId}"`;
+    let endTag = `</${this.type}>`;
+    let childrenMarkup = "";
+    for (let propName in this.props) {
+      if (propName === "children") {
+        childrenMarkup = this.props[propName]
+          .map((child: string | ReactElement, idx: number) => {
+            if (child instanceof ReactElement) {
+              return child.getMarkup(rootId + "-" + idx);
+            }
+            return child;
+          })
+          .join("");
+      } else {
+        startTag += `${propName}=${this.props[propName]}`;
+      }
+      // if (/^on/.test(key)) {
+      //   const eventName = key.toLocaleLowerCase().slice(2);
+      //   dom.addEventListener(eventName, this.props[key]);
+      //   continue;
+      // }
     }
-    const children = this.props.children.map((item) => {
-      return item.getDom();
-    });
 
-    dom.append(...children);
-
-    return dom;
+    return startTag + ">" + childrenMarkup + endTag;
   };
 }
 
-class ReactTextElement {
-  type = "#text";
-  text: string;
-  constructor(text: string) {
-    this.text = text;
-  }
-  getDom = () => {
-    return document.createTextNode(this.text);
-  };
-}
-
-class ReactFunctionElement {
-  type = "#function";
-  func: (props: any) => ReactElement;
-  props: { children: ReactElement[] } & { [key: string]: any };
-  constructor(func: any, props: any) {
-    this.props = props;
-    this.func = func;
-  }
-  getDom = () => {
-    return this.func(this.props).getDom();
+class ReactFunctionElement extends ReactElement {
+  getMarkup = (rootId: string): string => {
+    if (typeof this.type !== "function") return "";
+    return this.type(this.props).getMarkup(rootId);
   };
 }
 
@@ -50,15 +52,7 @@ function createReactElement(type: string | Function, props: any) {
   if (typeof type === "function") {
     return new ReactFunctionElement(type, props);
   }
-  return new ReactElement(type, {
-    ...props,
-    children: props.children.map((child: any) => {
-      if (typeof child === "string") {
-        return new ReactTextElement(child);
-      }
-      return child;
-    }),
-  });
+  return new ReactNativeElement(type, props);
 }
 
 export default createReactElement;

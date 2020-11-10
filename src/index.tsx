@@ -18,9 +18,13 @@ const App= (props: {msg: string}) => {
 };
 const container = document.getElementById("root") as HTMLElement;
 render(<App msg="this is msg" />, container);
+console.log(
+    <App msg="this is msg"/>
+)
+// console.log(<div>123</div>)
 // ReactDOM.render(
 //   <React.StrictMode>
-//     <App />
+//     <App msg="this is msg"/>
 //   </React.StrictMode>
 //   , container);
 
