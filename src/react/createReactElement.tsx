@@ -28,7 +28,11 @@ class ReactNativeElement extends ReactElement {
           })
           .join("");
       } else {
-        startTag += `${propName}=${this.props[propName]}`;
+        let newPropName = propName;
+        if (propName === "className") {
+          newPropName = "class";
+        }
+        startTag += ` ${newPropName}="${this.props[propName]}"`;
       }
       // if (/^on/.test(key)) {
       //   const eventName = key.toLocaleLowerCase().slice(2);
