@@ -1,8 +1,15 @@
-import { createElement } from "react";
-import { ReactElement } from "./createElement";
-function render(reactElement: ReactElement | any, container: HTMLElement ) {
-  const dom = reactElement.getDom()
-  container.append(dom)
+import { ReactElement } from "./createReactElement";
+function render(
+  element: ReactElement | any | Function,
+  container: HTMLElement
+) {
+  if (typeof element === "function") {
+    const dom = element().getDom();
+    container.append(dom);
+    return
+  }
+  const dom = element.getDom();
+  container.append(dom);
 }
 
-export default render
+export default render;
