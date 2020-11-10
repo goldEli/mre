@@ -3,21 +3,21 @@
 // const createElement = React.createElement
 import React, { render } from "./react";
 
-const Son = () => {
-  return <h1>son</h1>;
+const Son = (props: {msg: string}) => {
+return <h1>{props.msg}</h1>;
 };
-const App= () => {
+const App= (props: {msg: string}) => {
   return (
     <div className="first">
+      <h3>{props.msg}</h3>
       first
       <span title="second">second</span>
-      <Son/>
+      <Son msg="this is son"/>
     </div>
   );
 };
-console.log(<App/>)
 const container = document.getElementById("root") as HTMLElement;
-render(<App></App>, container);
+render(<App msg="this is msg" />, container);
 // ReactDOM.render(
 //   <React.StrictMode>
 //     <App />

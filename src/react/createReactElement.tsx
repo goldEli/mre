@@ -33,9 +33,22 @@ class ReactTextElement {
   };
 }
 
+class ReactFunctionElement {
+  type = "#function";
+  func: (props: any) => ReactElement;
+  props: { children: ReactElement[] } & { [key: string]: any };
+  constructor(func: any, props: any) {
+    this.props = props;
+    this.func = func;
+  }
+  getDom = () => {
+    return this.func(this.props).getDom();
+  };
+}
+
 function createReactElement(type: string | Function, props: any) {
   if (typeof type === "function") {
-    return type()
+    return new ReactFunctionElement(type, props);
   }
   return new ReactElement(type, {
     ...props,
