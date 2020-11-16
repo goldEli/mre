@@ -1,5 +1,4 @@
 import React from "../index";
-import { ReactElement } from "../createReactElement";
 
 describe("test createElement", () => {
 
