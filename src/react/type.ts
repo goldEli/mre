@@ -1,1 +1,6 @@
-export { default as ReactElement } from "./createElement";
+export interface IReactElement {
+  type: string | Function;
+  props: { [key: string]: any } & {
+    children: any[]
+  }
+}

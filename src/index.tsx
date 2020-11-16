@@ -3,9 +3,6 @@
 // const createElement = React.createElement
 import React, { render, useState } from "./react";
 
-const Son = (props: { msg: string }) => {
-  return <h1>{props.msg}</h1>;
-};
 const Counter = () => {
   const [num, setNum] = useState(0)
 
@@ -25,27 +22,18 @@ const Counter = () => {
     </div>
   )
 }
-const App = (props: { msg: string }) => {
-  return (
-    <div className="first">
-      <h3>{props.msg}</h3>
-      first
-      <span title="second">second</span>
-      <Son msg="this is son" />
-      <Counter />
-    </div>
-  );
-};
-const ele = <App msg="this is msg" />
-const container = document.getElementById("root") as HTMLElement;
+/** @jsx React.createElement */
+// const App = (props: { msg: string }) => {
+//   return (
+//     <div className="first">
+//       <h1>{props.msg}</h1>
+//       <Counter />
+//     </div>
+//   );
+// };
+const ele = <div className="first">first<span title="second">{123}<Counter /></span></div>
+// const container = document.getElementById("root") as HTMLElement;
 console.log(ele)
-render(<App msg="this is msg" />, container);
-// console.log((ele as any).getMarkup("0"));
-// console.log(<div>123</div>)
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App msg="this is msg"/>
-//   </React.StrictMode>
-//   , container);
+// render(<App msg="this is msg" />, container);
 
 export { };

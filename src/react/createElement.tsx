@@ -1,14 +1,32 @@
-import createReactElement from "./createReactElement";
+import { IReactElement } from "./type";
 
-function createElement(type: string, props: any, ...children: any[]) {
-  const newProps: any = {};
+function createElement(type: string, props: {[key:string]: any}, ...children: any[]): IReactElement {
+  const propsFilted: { [key: string]: string } = {}
   for (let key in props) {
-    if (!/^(__)+/.test(key)) {
-      newProps[key] = props[key];
+    if (!key.startsWith("__")) {
+      propsFilted[key] = props[key]
     }
   }
-  newProps['children'] = children
-  return createReactElement(type, newProps)
 
+  return {
+    type,
+    props: {
+      ...propsFilted,
+      children: children.map(child => {
+        return ["string", "number"].includes(typeof child) ? createTextElement(child) : child
+      })
+    }
+  }
 }
+
+function createTextElement(text: string | number) {
+  return {
+    type: "textElement",
+    props: {
+      nodeValue: text,
+      children: []
+    }
+  }
+}
+
 export default createElement;
