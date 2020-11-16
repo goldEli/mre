@@ -63,6 +63,10 @@ class ReactNativeElement extends ReactElement {
         dom.addEventListener(eventName, this.props[propName])
         continue
       }
+      if (propName === "className") {
+        dom.setAttribute("class", this.props[propName])
+        continue
+      }
       if (propName === "children") {
         children = this.props[propName].map((child, idx) => {
           if (typeof child === "string") {

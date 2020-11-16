@@ -5,10 +5,9 @@ describe("test createElement", () => {
 
     it("render normal html", () => {
       const ele = (<div title="123">test</div>) as any
-      expect(ele).toHaveProperty('getMarkup')
-      
-      const markup =  ele.getMarkup("0")
-      expect(markup).toBe(`<div data-reactid="0" title="123">test</div>`)
+      expect(ele).toHaveProperty('getDom')
+      const dom =  ele.getDom("0")
+      expect(dom.outerHTML).toBe(`<div data-reactid="0" title="123">test</div>`)
     })
 
   it("render function component", () => {
@@ -26,8 +25,8 @@ describe("test createElement", () => {
       );
     };
     const ele = (<App msg="this is msg" />) as any;
-    const markup = ele.getMarkup("0");
-    expect(markup).toBe(
+    const dom = ele.getDom("0");
+    expect(dom.outerHTML).toBe(
       `<div data-reactid="0" class="first"><h3 data-reactid="0-0">this is msg</h3>first<span data-reactid="0-2" title="second">second</span><h1 data-reactid="0-3">this is son</h1></div>`
     );
   });
