@@ -1,4 +1,4 @@
-import React, { useState, render } from "../index"
+// import React, { useState, render } from "../index"
 
 // let flag = true
 // const Counter = () => {

@@ -1,4 +1,4 @@
-import { reRender } from "./render";
+// import { reRender } from "./render";
 const stack: any[] = []
 
 function useState(initState: any) {
@@ -10,7 +10,7 @@ function useState(initState: any) {
 
   function setState(state: any) {
     stack[curIndex] = state
-    reRender()
+    // reRender()
   }
   return [stack[curIndex], setState]
 }

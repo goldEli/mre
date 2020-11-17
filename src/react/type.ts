@@ -1,5 +1,5 @@
 export interface IReactElement {
-  type: string | Function;
+  type: string | Function | "textElement";
   props: { [key: string]: any } & {
     children: any[]
   }
