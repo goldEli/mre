@@ -14,4 +14,10 @@ export interface IFiber {
   parent?: IFiber;
   sibling?: IFiber;
   child?: IFiber;
+  alternate?: IFiber;
+  effectTag?: "UPDATE" | "PLACEMENT" | "DELETION"
+}
+
+export interface IProps {
+  [key: string]: any
 }
