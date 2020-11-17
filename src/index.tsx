@@ -32,7 +32,12 @@ import {render} from "./react/dom"
 //   );
 // };
 /** @jsx React.createElement */
-const ele = <div className="first">first<span title="second">{123}</span></div>
+const ele = (
+  <div title="123">
+    <h1>Hello World</h1>
+    <h2 >from React</h2>
+  </div>
+)
 const container = document.getElementById("root") as HTMLElement;
 render(ele, container);
 

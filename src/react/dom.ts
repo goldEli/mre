@@ -1,25 +1,88 @@
-import { IReactElement } from "./type";
+import { IReactElement, IFiber } from "./type";
+
+let nextUnitOfWork: IFiber | undefined = void 0
+let wipRoot: IFiber | undefined = void 0
 
 export function render(
   element: IReactElement,
   container: HTMLElement
 ) {
-  if (element.type === "textElement") {
-    const dom = document.createTextNode(element.props.nodeValue)
-    container.append(dom)
-    return
+  wipRoot = {
+    dom: container,
+    props: {
+      children: [element]
+    }
   }
-  if (typeof element.type === "string") {
-    const dom = document.createElement(element.type)
-    const isAttributs = (key:string) => !["children"].includes(key) 
-
-    Object.keys(element.props).filter(isAttributs).forEach((propName) => {
-      dom.setAttribute(propName, element.props[propName])
-    })
-    element.props.children.forEach(child => {
-      render(child, dom)
-    })
-    container.append(dom)
-  }
+  nextUnitOfWork = wipRoot
 }
 
+function createDom(fiber: IFiber) {
+  const dom = (fiber.type === "textElement")
+    ? document.createTextNode(fiber.props.nodeValue)
+    : document.createElement(fiber.type as string)
+  const isAttribute = (key: string) => !["children", "nodeValue"].includes(key)
+
+  Object.keys(fiber.props).filter(isAttribute).forEach((propName) => {
+    (dom as HTMLElement).setAttribute(propName, fiber.props[propName])
+  })
+  // fiber.props.children.forEach(child => {
+  //   render(child, dom as HTMLElement)
+  // })
+  return dom
+}
+
+
+function workLoop(deadLine: any) {
+  let shouldYield = false
+  while (nextUnitOfWork !== null && !shouldYield) {
+    nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
+    shouldYield = deadLine.timeRemaining() < 1
+  }
+  window.requestIdleCallback(workLoop)
+}
+
+window.requestIdleCallback(workLoop)
+
+function performUnitOfWork(fiber: IFiber | undefined): IFiber | undefined {
+  if (fiber === void 0) return fiber
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber) as HTMLElement
+  }
+  if (fiber.parent) {
+    fiber.parent?.dom?.appendChild(fiber.dom as HTMLElement)
+  }
+  const elements = fiber.props.children
+  let prevSibling: null | IFiber = null
+
+  for (let i = 0; i < elements.length; ++i) {
+    const element = elements[i]
+    const newFiber: IFiber = {
+      type: element.type,
+      props: element.props,
+      parent: fiber,
+      dom: void 0
+    }
+    if (i === 0) {
+      fiber.child = newFiber
+    } else {
+      if (prevSibling) {
+        prevSibling.sibling = newFiber
+      }
+    }
+
+    prevSibling = newFiber
+  }
+
+  if (fiber.child) {
+    return fiber.child
+  }
+
+  let nextFiber: IFiber | undefined = fiber
+  while (nextFiber) {
+    if (nextFiber.sibling) {
+      return nextFiber.sibling
+    }
+    nextFiber = nextFiber.parent
+  }
+
+}
