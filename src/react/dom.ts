@@ -1,6 +1,7 @@
 import { IReactElement, IFiber } from "./type";
 
 let nextUnitOfWork: IFiber | undefined = void 0
+// work in progress root; avoiding incompelete ui
 let wipRoot: IFiber | undefined = void 0
 
 export function render(
@@ -14,6 +15,21 @@ export function render(
     }
   }
   nextUnitOfWork = wipRoot
+}
+
+// commit phases; render to broswer
+function commitRoot() {
+  commitWork(wipRoot?.child)
+  wipRoot = void 0 
+}
+
+function commitWork(fiber: IFiber | undefined) {
+  if (!fiber) return
+
+  const parentDom = fiber.parent?.dom
+  parentDom?.append(fiber?.dom as HTMLElement)
+  commitWork(fiber.child)
+  commitWork(fiber.sibling)
 }
 
 function createDom(fiber: IFiber) {
@@ -38,6 +54,9 @@ function workLoop(deadLine: any) {
     nextUnitOfWork = performUnitOfWork(nextUnitOfWork)
     shouldYield = deadLine.timeRemaining() < 1
   }
+  if (!nextUnitOfWork && wipRoot) {
+    commitRoot()
+  }
   window.requestIdleCallback(workLoop)
 }
 
@@ -48,9 +67,9 @@ function performUnitOfWork(fiber: IFiber | undefined): IFiber | undefined {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber) as HTMLElement
   }
-  if (fiber.parent) {
-    fiber.parent?.dom?.appendChild(fiber.dom as HTMLElement)
-  }
+  // if (fiber.parent) {
+  //   fiber.parent?.dom?.appendChild(fiber.dom as HTMLElement)
+  // }
   const elements = fiber.props.children
   let prevSibling: null | IFiber = null
 
