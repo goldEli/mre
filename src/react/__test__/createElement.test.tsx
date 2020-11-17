@@ -1,8 +1,9 @@
 import React from "../index";
+import { IReactElement } from "../type";
 
 describe("test createElement", () => {
   it("render normal html", () => {
-    const element = <div title="1"><span>2</span></div> as any
+    const element = <div title="1"><span>2</span></div> as IReactElement
     expect(element).toEqual({
       type: "div",
       props: {
