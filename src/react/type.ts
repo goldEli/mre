@@ -1,16 +1,13 @@
-export interface IReactElement {
-  type: string | "textElement";
-  props: { [key: string]: any } & {
-    children: any[]
-  }
+export type IElementType = string & "textElement"
+export interface IElement {
+  type: IElementType;
+  props: IProps
 }
 
 export interface IFiber {
   dom?: HTMLElement;
-  type?: string | "textElement";
-  props: { [key: string]: any } & {
-    children: IReactElement[]
-  }
+  type?: IElementType;
+  props: IProps
   parent?: IFiber;
   sibling?: IFiber;
   child?: IFiber;
@@ -20,4 +17,5 @@ export interface IFiber {
 
 export interface IProps {
   [key: string]: any
+  children: IElement[]
 }
