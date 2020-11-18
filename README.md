@@ -63,7 +63,9 @@ const rootFiber = {
 }
 ```
 
-#### 引入 Fiber 架构 实现 Concurrent mode
+### Concurrent mode
+
+引入 Fiber 架构 实现 
 
 Fiber 架构 = 数据结构 + 算法
 
@@ -88,3 +90,9 @@ Fiber 架构 = 数据结构 + 算法
 引入 Fiber 结构后，每个节点，都可以访问到下一个节点，所以可以暂停渲染。
 
 利用 window.requestIdelCallback 循环执行每个单元的渲染，当浏览器有优先级更高的任务时，暂停执行，当浏览器空闲后，继续执行
+
+### Render and commit phases
+
+如果在每个单元中执行渲染，当暂停时，用户就会看到不完整的页面，用户体验很差
+
+所以需要当所有单元完全执行后（render 阶段），再统一渲染到页面（commit 阶段）
