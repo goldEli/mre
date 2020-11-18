@@ -62,3 +62,29 @@ const rootFiber = {
   child: fiber,
 }
 ```
+
+#### 引入 Fiber 架构 实现 Concurrent mode
+
+Fiber 架构 = 数据结构 + 算法
+
+**数据结构**
+
+将原有的 element 串成链表，在 element 的基础上增加 parent， child, sibling
+
+```html
+<div>
+  <aside>
+    <h1><h1>
+    <h2><h2>
+  </aside>
+  <p><p>
+</div>
+```
+以上面的 html 为例 
+
+![](https://raw.githubusercontent.com/goldEli/mre/main/assets/fiber.png)
+
+
+引入 Fiber 结构后，每个节点，都可以访问到下一个节点，所以可以暂停渲染。
+
+利用 window.requestIdelCallback 循环执行每个单元的渲染，当浏览器有优先级更高的任务时，暂停执行，当浏览器空闲后，继续执行
