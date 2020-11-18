@@ -2,7 +2,7 @@
 // import ReactDOM from 'react-dom';
 // const createElement = React.createElement
 import React from "./react";
-import {render} from "./react/dom"
+// import {render} from "./react/dom"
 
 // const Counter = () => {
 //   const [num, setNum] = useState(0)
@@ -38,7 +38,8 @@ const ele = (
     <h2 >from React</h2>
   </div>
 )
+console.log(ele)
 const container = document.getElementById("root") as HTMLElement;
-render(ele, container);
+// render(ele, container);
 
 export { };

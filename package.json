@@ -10,7 +10,7 @@
     "test": "node scripts/test.js",
     "test:nowatch": "cross-env CI=true node scripts/test.js"
   },
-  "husky": {
+  "__husky": {
     "hooks": {
       "pre-commit": "npm run test:nowatch && npm run lint"
     }

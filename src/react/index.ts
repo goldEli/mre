@@ -1,8 +1,29 @@
-import createElement from "./createElement";
-// export {default as useState} from "./useState"
+import { IProps } from "./type";
+const createElement = (type: string, props: IProps, ...children: any[]) => {
+  return {
+    type,
+    props: {
+      ...props,
+      children: children.map(child => {
+        return ["string", "number"].includes(typeof child) ? createTextElement(child) : child
+      })
+    }
+  }
+}
 
-window.stateIndex = 0
+const createTextElement = (text: string | number) => {
+  return {
+    type: "textElement",
+    props: {
+      nodeValue: text,
+      children: []
+    }
+  }
+}
 
-export default {
-  createElement,
-};
+
+
+const React = {
+  createElement
+}
+export default React;
