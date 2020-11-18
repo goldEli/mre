@@ -1,4 +1,4 @@
-export type IElementType = string & "textElement"
+export type IElementType = string | "textElement"
 export interface IElement {
   type: IElementType;
   props: IProps
@@ -6,7 +6,7 @@ export interface IElement {
 
 export interface IFiber {
   dom?: HTMLElement;
-  type?: IElementType;
+  type: IElementType;
   props: IProps
   parent?: IFiber;
   sibling?: IFiber;
