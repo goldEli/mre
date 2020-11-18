@@ -5,13 +5,16 @@ let nextUnitOfWork: IFiber | null = null
 // work in process
 let wipRoot: IFiber | null = null
 
+let currentRoot: IFiber
+
 export const render = (element: IElement, container: HTMLElement) => {
   wipRoot = {
     type: "",
     dom: container,
     props: {
       children: [element]
-    }
+    },
+    alternate: currentRoot
   }
 
   nextUnitOfWork = wipRoot
@@ -33,6 +36,7 @@ const commitRoot = () => {
   if (wipRoot === null) return
   console.log("wipRoot", wipRoot)
   commitWork(wipRoot)
+  currentRoot = wipRoot
   wipRoot = null
 }
 
@@ -49,26 +53,41 @@ const commitWork = (fiber: IFiber) => {
   }
 }
 
-
-const performNextUnitOfWork = (fiber: IFiber): IFiber | null => {
-  if (!fiber.dom) {
-    fiber.dom = createDom(fiber)
-  }
-  // if (fiber.parent) {
-  //   fiber.parent.dom?.appendChild(fiber.dom)
-  // }
+const reconcileChildren = (fiber: IFiber) => {
   let index = 0
   let elements = fiber.props.children
   let prevFiber: IFiber | null = null
+  let oldFiber = fiber.alternate?.child
+
 
   while (index < elements.length) {
     const element = elements[index]
-    const newFiber: IFiber = {
-      type: element.type,
-      props: element.props,
-      parent: fiber,
-      dom: void 0
+    const sameType = element && oldFiber && element.type === oldFiber.type
+    let newFiber: IFiber | null = null
+
+    if (sameType) {
+      newFiber = {
+        type: element.type,
+        props: element.props,
+        parent: fiber,
+        dom: void 0,
+        alternate: oldFiber,
+        effectTag: "UPDATE",
+      }
+    } else if (!sameType && element) {
+      newFiber = {
+        type: element.type,
+        props: element.props,
+        parent: fiber,
+        dom: void 0,
+        alternate: oldFiber,
+        effectTag: "PLACEMENT",
+      }
+    } else {
+      newFiber = oldFiber as IFiber
+      newFiber.effectTag = "DELETION"
     }
+
     if (index === 0) {
       fiber.child = newFiber
     } else if (prevFiber) {
@@ -77,6 +96,14 @@ const performNextUnitOfWork = (fiber: IFiber): IFiber | null => {
     prevFiber = newFiber
     ++index
   }
+
+}
+
+const performNextUnitOfWork = (fiber: IFiber): IFiber | null => {
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber)
+  }
+  reconcileChildren(fiber)
 
   if (fiber.child) {
     return fiber.child
