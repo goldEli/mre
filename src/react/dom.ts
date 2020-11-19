@@ -67,9 +67,9 @@ const commitWork = (fiber: IFiber) => {
 
 const isEvent = (propName: string) => propName.startsWith("on")
 const isAttribute = (propName: string) => propName !== "children" && !isEvent(propName)
+const isNew = (props: IProps, prevProps: IProps) => (propName: string) => props[propName] !== prevProps[propName]
+const isGone = (props: IProps, prevProps: IProps) => (propName: string) => !(propName in props)
 const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: string]: any } = {}) => {
-  const isNew = (propName: string) => prevProps[propName] === void 0
-  const isGone = (propName: string) => props[propName] === void 0
   // update event
   Object.keys(props)
     .filter(isEvent)
@@ -80,7 +80,7 @@ const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: 
   // remove event
   Object.keys(prevProps)
     .filter(isEvent)
-    .filter(isGone)
+    .filter(isGone(props, prevProps as IProps))
     .forEach(propName => {
       const eventName = propName.toLocaleLowerCase().slice(2)
       dom.removeEventListener(eventName, props[propName])
@@ -89,7 +89,7 @@ const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: 
   // remove props
   Object.keys(prevProps)
     .filter(isAttribute)
-    .filter(isGone)
+    .filter(isGone(props, prevProps as IProps))
     .forEach(propName => {
       dom.removeAttribute(propName)
     })
@@ -97,10 +97,8 @@ const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: 
   // update props
   Object.keys(props)
     .filter(isAttribute)
+    .filter(isNew(props, prevProps as IProps))
     .forEach(propName => {
-      if (props[propName] !== prevProps[propName]) {
-        return
-      }
       (dom as any)[propName] = props[propName]
     })
 
