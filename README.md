@@ -3,10 +3,10 @@
 toy react
 
 - [x] CreateElement
-- [ ] Render
-- [ ] Concurrent mode
-- [ ] Fiber
-- [ ] Render and commit phases
+- [x] Render
+- [x] Concurrent mode
+- [x] Fiber
+- [x] Render and commit phases
 - [ ] Reconciliation
 - [ ] Function component
 - [ ] UseState
