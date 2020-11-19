@@ -7,7 +7,7 @@ toy react
 - [x] Concurrent mode
 - [x] Fiber
 - [x] Render and commit phases
-- [ ] Reconciliation
+- [x] Reconciliation
 - [ ] Function component
 - [ ] UseState
 - [ ] UseEffect
