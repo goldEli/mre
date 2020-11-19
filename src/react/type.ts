@@ -1,4 +1,4 @@
-export type IElementType = string | "textElement"
+export type IElementType = string | "textElement" | "rootElement"
 export interface IElement {
   type: IElementType;
   props: IProps

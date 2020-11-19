@@ -1,4 +1,4 @@
-import { IElement, IFiber } from "./type";
+import { IElement, IFiber, IProps } from "./type";
 
 let nextUnitOfWork: IFiber | null = null
 
@@ -9,21 +9,20 @@ let currentRoot: IFiber
 
 export const render = (element: IElement, container: HTMLElement) => {
   wipRoot = {
-    type: "",
+    type: "rootElement",
     dom: container,
     props: {
       children: [element]
     },
-    alternate: currentRoot
+    alternate: currentRoot,
   }
 
   nextUnitOfWork = wipRoot
 }
 
 const createDom = (fiber: IFiber): HTMLElement => {
-  const dom = fiber.type === "textElement" ? document.createTextNode("") : document.createElement(fiber.type)
-
   const isAttribute = (propName: string) => propName !== "children"
+  const dom = fiber.type === "textElement" ? document.createTextNode("") : document.createElement(fiber.type)
 
   Object.keys(fiber.props).filter(isAttribute).forEach((propName) => {
     (dom as any)[propName] = fiber.props[propName]
@@ -41,9 +40,16 @@ const commitRoot = () => {
 }
 
 const commitWork = (fiber: IFiber) => {
-  if (!fiber) return
-  if (fiber.parent?.dom && fiber.dom) {
-    fiber.parent.dom.appendChild(fiber.dom)
+  if (!fiber || !fiber.dom) return
+
+  if (fiber.effectTag === "PLACEMENT") {
+    fiber.parent?.dom?.appendChild(fiber.dom)
+  }
+  if (fiber.effectTag === "DELETION") {
+    fiber.dom.remove()
+  }
+  if (fiber.effectTag === "UPDATE") {
+    updateDom(fiber.dom, fiber.props, fiber.alternate?.props)
   }
   if (fiber.child) {
     commitWork(fiber.child)
@@ -51,6 +57,31 @@ const commitWork = (fiber: IFiber) => {
   if (fiber.sibling) {
     commitWork(fiber.sibling)
   }
+}
+
+const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: string]: any } = {}) => {
+  const isAttribute = (propName: string) => propName !== "children"
+  const isNew = (propName: string) => prevProps[propName] === void 0
+  const isGone = (propName: string) => props[propName] === void 0
+
+  // remove props
+  Object.keys(prevProps)
+    .filter(isAttribute)
+    .filter(isGone)
+    .forEach(propName => {
+      dom.removeAttribute(propName)
+    })
+
+  // update props
+  Object.keys(props)
+    .filter(isAttribute)
+    .filter(isNew)
+    .forEach(propName => {
+      if (props[propName] !== prevProps[propName]) {
+        return
+      }
+      (dom as any)[propName] = props[propName]
+    })
 }
 
 const reconcileChildren = (fiber: IFiber) => {
@@ -64,13 +95,12 @@ const reconcileChildren = (fiber: IFiber) => {
     const element = elements[index]
     const sameType = element && oldFiber && element.type === oldFiber.type
     let newFiber: IFiber | null = null
-
     if (sameType) {
       newFiber = {
         type: element.type,
         props: element.props,
         parent: fiber,
-        dom: void 0,
+        dom: oldFiber?.dom,
         alternate: oldFiber,
         effectTag: "UPDATE",
       }
