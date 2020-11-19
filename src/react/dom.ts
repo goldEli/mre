@@ -21,11 +21,17 @@ export const render = (element: IElement, container: HTMLElement) => {
 }
 
 const createDom = (fiber: IFiber): HTMLElement => {
-  const isAttribute = (propName: string) => propName !== "children"
   const dom = fiber.type === "textElement" ? document.createTextNode("") : document.createElement(fiber.type)
 
   Object.keys(fiber.props).filter(isAttribute).forEach((propName) => {
     (dom as any)[propName] = fiber.props[propName]
+  })
+
+  // add Event
+
+  Object.keys(fiber.props).filter(isEvent).forEach((propName) => {
+    const eventName = propName.toLocaleLowerCase().slice(2)
+    dom.addEventListener(eventName, fiber.props[propName])
   })
 
   return dom as HTMLElement
@@ -59,10 +65,26 @@ const commitWork = (fiber: IFiber) => {
   }
 }
 
+const isEvent = (propName: string) => propName.startsWith("on")
+const isAttribute = (propName: string) => propName !== "children" && !isEvent(propName)
 const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: string]: any } = {}) => {
-  const isAttribute = (propName: string) => propName !== "children"
   const isNew = (propName: string) => prevProps[propName] === void 0
   const isGone = (propName: string) => props[propName] === void 0
+  // update event
+  Object.keys(props)
+    .filter(isEvent)
+    .forEach(propName => {
+      const eventName = propName.toLocaleLowerCase().slice(2)
+      dom.addEventListener(eventName, props[propName])
+    })
+  // remove event
+  Object.keys(prevProps)
+    .filter(isEvent)
+    .filter(isGone)
+    .forEach(propName => {
+      const eventName = propName.toLocaleLowerCase().slice(2)
+      dom.removeEventListener(eventName, props[propName])
+    })
 
   // remove props
   Object.keys(prevProps)
@@ -75,13 +97,13 @@ const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: 
   // update props
   Object.keys(props)
     .filter(isAttribute)
-    .filter(isNew)
     .forEach(propName => {
       if (props[propName] !== prevProps[propName]) {
         return
       }
       (dom as any)[propName] = props[propName]
     })
+
 }
 
 const reconcileChildren = (fiber: IFiber) => {

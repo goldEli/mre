@@ -3,7 +3,7 @@ import {render} from "./react/dom"
 
 const ele = (
   <div title="123">
-    <h1>Hello World</h1>
+    <h1 onClick={() => console.log(123)}>Hello World</h1>
     <h2 >from React</h2>
   </div>
 )
