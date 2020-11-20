@@ -8,9 +8,9 @@ toy react
 - [x] Fiber
 - [x] Render and commit phases
 - [x] Reconciliation
-- [ ] Function component
-- [ ] UseState
-- [ ] UseEffect
+- [x] Function component
+- [x] useState
+- [ ] useEffect
 - [ ] Scheduler
 - [ ] State manegement
 

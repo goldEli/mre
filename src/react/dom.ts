@@ -48,6 +48,7 @@ const commitRoot = () => {
   commitWork(wipRoot.child as IFiber)
   currentRoot = wipRoot
   wipRoot = null
+  hooksIdx = 0
 }
 
 const commitWork = (fiber: IFiber) => {
@@ -115,10 +116,39 @@ const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: 
 const isFunctionComponent = (type: IElementType) => {
   return type instanceof Function
 }
+
 const updateFunctionComponent = (fiber: IFiber) => {
   const children = [(fiber.type as any)(fiber.props)]
+
   reconcileChildren(fiber, children)
 }
+
+const hooksState: any[] = [];
+let hooksIdx = 0;
+export const useState = <T,>(initState: T): any => {
+  let currentIdx = hooksIdx
+  let state: T = initState
+
+  if (hooksState[hooksIdx] !== void 0) {
+    state = hooksState[hooksIdx]
+  }
+
+  const setState = (newState: T) => {
+    hooksState[currentIdx] = newState
+    wipRoot = {
+      type: currentRoot.type,
+      dom: currentRoot.dom,
+      props: currentRoot.props,
+      alternate: currentRoot
+    }
+    nextUnitOfWork = wipRoot
+  }
+
+  ++hooksIdx
+
+  return [state, setState]
+};
+
 const updateHostComponent = (fiber: IFiber) => {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber)

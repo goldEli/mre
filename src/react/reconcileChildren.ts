@@ -4,11 +4,11 @@ const reconcileChildren = (fiber: IFiber, elements: IElement[]) => {
   let index = 0
   let prevFiber: IFiber | null = null
   let oldFiber = fiber.alternate?.child
-
   while (index < elements.length) {
     const element = elements[index]
     const sameType = element && oldFiber && element.type === oldFiber.type
     let newFiber: IFiber | null = null
+    console.log("sameType", sameType, {element, oldFiber})
     if (sameType) {
       newFiber = {
         type: element.type,
@@ -38,6 +38,7 @@ const reconcileChildren = (fiber: IFiber, elements: IElement[]) => {
       prevFiber.sibling = newFiber
     }
     prevFiber = newFiber
+    oldFiber = oldFiber?.sibling
     ++index
   }
 
