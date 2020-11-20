@@ -1,5 +1,4 @@
 import React from "./react";
-import { render } from "./react/dom"
 
 // const ele = (
 //   <div title="123">
@@ -24,6 +23,6 @@ const App = (props: { name: string }) => {
 /** @jsx React.createElement */
 console.log(<App name="from React" />)
 const container = document.getElementById("root") as HTMLElement;
-render(<App name="from React" />, container);
+React.render(<App name="from React" />, container);
 
 export { };
