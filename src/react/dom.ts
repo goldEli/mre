@@ -1,4 +1,5 @@
-import { IElement, IFiber, IProps } from "./type";
+import { IElement, IFiber, IProps, IElementType } from "./type";
+import reconcileChildren from "./reconcileChildren";
 
 let nextUnitOfWork: IFiber | null = null
 
@@ -6,6 +7,11 @@ let nextUnitOfWork: IFiber | null = null
 let wipRoot: IFiber | null = null
 
 let currentRoot: IFiber
+
+const isEvent = (propName: string) => propName.startsWith("on")
+const isAttribute = (propName: string) => propName !== "children" && !isEvent(propName)
+const isNew = (props: IProps, prevProps: IProps) => (propName: string) => props[propName] !== prevProps[propName]
+const isGone = (props: IProps, prevProps: IProps) => (propName: string) => !(propName in props)
 
 export const render = (element: IElement, container: HTMLElement) => {
   wipRoot = {
@@ -21,14 +27,13 @@ export const render = (element: IElement, container: HTMLElement) => {
 }
 
 const createDom = (fiber: IFiber): HTMLElement => {
-  const dom = fiber.type === "textElement" ? document.createTextNode("") : document.createElement(fiber.type)
+  const dom = fiber.type === "textElement" ? document.createTextNode("") : document.createElement(fiber.type as any)
 
   Object.keys(fiber.props).filter(isAttribute).forEach((propName) => {
     (dom as any)[propName] = fiber.props[propName]
   })
 
   // add Event
-
   Object.keys(fiber.props).filter(isEvent).forEach((propName) => {
     const eventName = propName.toLocaleLowerCase().slice(2)
     dom.addEventListener(eventName, fiber.props[propName])
@@ -40,21 +45,27 @@ const createDom = (fiber: IFiber): HTMLElement => {
 const commitRoot = () => {
   if (wipRoot === null) return
   console.log("wipRoot", wipRoot)
-  commitWork(wipRoot)
+  commitWork(wipRoot.child as IFiber)
   currentRoot = wipRoot
   wipRoot = null
 }
 
 const commitWork = (fiber: IFiber) => {
-  if (!fiber || !fiber.dom) return
-
-  if (fiber.effectTag === "PLACEMENT") {
-    fiber.parent?.dom?.appendChild(fiber.dom)
+  if (!fiber) return
+  let domParentFiber = fiber.parent
+  while (!domParentFiber?.dom) {
+    domParentFiber = domParentFiber?.parent
   }
-  if (fiber.effectTag === "DELETION") {
+  const domParent = domParentFiber.dom
+
+  if (fiber.effectTag === "PLACEMENT" && fiber.dom) {
+    // fiber.parent?.dom?.appendChild(fiber.dom)
+    domParent.appendChild(fiber.dom)
+  }
+  if (fiber.effectTag === "DELETION" && fiber.dom) {
     fiber.dom.remove()
   }
-  if (fiber.effectTag === "UPDATE") {
+  if (fiber.effectTag === "UPDATE" && fiber.dom) {
     updateDom(fiber.dom, fiber.props, fiber.alternate?.props)
   }
   if (fiber.child) {
@@ -65,10 +76,6 @@ const commitWork = (fiber: IFiber) => {
   }
 }
 
-const isEvent = (propName: string) => propName.startsWith("on")
-const isAttribute = (propName: string) => propName !== "children" && !isEvent(propName)
-const isNew = (props: IProps, prevProps: IProps) => (propName: string) => props[propName] !== prevProps[propName]
-const isGone = (props: IProps, prevProps: IProps) => (propName: string) => !(propName in props)
 const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: string]: any } = {}) => {
   // update event
   Object.keys(props)
@@ -104,56 +111,30 @@ const updateDom = (dom: HTMLElement, props: IProps, prevProps: IProps | { [key: 
 
 }
 
-const reconcileChildren = (fiber: IFiber) => {
-  let index = 0
-  let elements = fiber.props.children
-  let prevFiber: IFiber | null = null
-  let oldFiber = fiber.alternate?.child
 
-
-  while (index < elements.length) {
-    const element = elements[index]
-    const sameType = element && oldFiber && element.type === oldFiber.type
-    let newFiber: IFiber | null = null
-    if (sameType) {
-      newFiber = {
-        type: element.type,
-        props: element.props,
-        parent: fiber,
-        dom: oldFiber?.dom,
-        alternate: oldFiber,
-        effectTag: "UPDATE",
-      }
-    } else if (!sameType && element) {
-      newFiber = {
-        type: element.type,
-        props: element.props,
-        parent: fiber,
-        dom: void 0,
-        alternate: oldFiber,
-        effectTag: "PLACEMENT",
-      }
-    } else {
-      newFiber = oldFiber as IFiber
-      newFiber.effectTag = "DELETION"
-    }
-
-    if (index === 0) {
-      fiber.child = newFiber
-    } else if (prevFiber) {
-      prevFiber.sibling = newFiber
-    }
-    prevFiber = newFiber
-    ++index
-  }
-
+const isFunctionComponent = (type: IElementType) => {
+  return type instanceof Function
 }
-
-const performNextUnitOfWork = (fiber: IFiber): IFiber | null => {
+const updateFunctionComponent = (fiber: IFiber) => {
+  const children = [(fiber.type as any)(fiber.props)]
+  reconcileChildren(fiber, children)
+}
+const updateHostComponent = (fiber: IFiber) => {
   if (!fiber.dom) {
     fiber.dom = createDom(fiber)
   }
-  reconcileChildren(fiber)
+  reconcileChildren(fiber, fiber.props.children)
+}
+
+
+const performNextUnitOfWork = (fiber: IFiber): IFiber | null => {
+
+  if (isFunctionComponent(fiber.type)) {
+    updateFunctionComponent(fiber)
+  } else {
+    updateHostComponent(fiber)
+  }
+
 
   if (fiber.child) {
     return fiber.child
