@@ -1,6 +1,6 @@
 # mre
 
-toy react
+## Feature
 
 - [x] CreateElement
 - [x] Render
@@ -14,7 +14,7 @@ toy react
 - [ ] Scheduler
 - [ ] State manegement
 
-# Note
+## Note
 
 ### element data structure
 
